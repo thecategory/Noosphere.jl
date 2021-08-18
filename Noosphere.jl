@@ -7,16 +7,6 @@ using URIs
 using StatsPlots
 
 uri = "https://global-mind.org/cgi-bin/eggdatareq.pl"
-headers = Dict("User-Agent" => "HTTP.jl")
-
-function getrequestparams(params)
-  return "?z=1&year=" * params["year"] * 
-  "&month=" * params["month"] * 
-  "&day=" * params["day"] * 
-  "&stime=" * params["stime"] * 
-  "&etime=" * params["etime"] * 
-  "&gzip=No&idate=Yes"
-end
 
 params = Dict(
     "z" => "1",
@@ -29,8 +19,17 @@ params = Dict(
     "idate"=>"Yes"
 )
 
-function getrequestbodystr()
-    uri_withparam = URI(uri * getrequestparams(params))
+function getparams(params)
+  return "?z=1&year=" * params["year"] * 
+  "&month=" * params["month"] * 
+  "&day=" * params["day"] * 
+  "&stime=" * params["stime"] * 
+  "&etime=" * params["etime"] * 
+  "&gzip=No&idate=Yes"
+end
+
+function get()
+    uri_withparam = URI(uri * getparams(params))
     r = HTTP.get(uri_withparam)
     str = decode(r.body, enc"ASCII")
     return str
@@ -43,7 +42,7 @@ function savetofile(str)
     close(f)
 end
 
-function getheaderdatasplit(str)
+function spl(str)
   spl = findfirst("gmtime", str)
   return spl
 end
@@ -57,26 +56,30 @@ end
 
 function getdf(str, spl)
   datastr = str[spl[1] - 1:length(str)]
-  df = CSV.File(IOBuffer(datastr), silencewarnings=true) |> DataFrame
+  df = dropmissing(CSV.File(IOBuffer(datastr), silencewarnings=true) |> DataFrame)
+  return df
 end
 
 function test()
-  str = getrequestbodystr()
-  spl = getheaderdatasplit(str)
-  headerdf = getheaderdf(str, spl)
+  str = get()
+  spl = spl(str)
+  # headerdf = getheaderdf(str, spl)
   # println(headerdf)
   df = getdf(str, spl)
   println(df)
-
 end
 
 function testplot()
-  datastr = read("data.csv", String)
-  df = CSV.File(IOBuffer(datastr), silencewarnings=true) |> DataFrame
-  # @df df plot(:x, cols(propertynames(df)[2:end]))
+  df = CSV.read("data.csv", DataFrame)
+
+  for n in names(df)
+    rename!(df, Dict(n => "e" * n))
+  end
+
+  p = @df df plot(:egmtime, [:e1])
+  savefig(p, "data.png")
 end
 
+testplot()
 
-# testplot()
-
-test()
+# test()
