@@ -66,7 +66,7 @@ function test()
   headerdf = getheaderdf(str, spl)
   # println(headerdf)
   df = getdf(str, spl)
-  # println(df)
+  println(df)
 
 end
 
@@ -77,4 +77,6 @@ function testplot()
 end
 
 
-testplot()
+# testplot()
+
+test()
