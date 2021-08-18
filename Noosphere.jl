@@ -4,7 +4,9 @@ using CSV
 using DataFrames
 using Missings
 using URIs
-using StatsPlots
+using Plots
+# using StatsPlots
+using UnicodePlots
 
 uri = "https://global-mind.org/cgi-bin/eggdatareq.pl"
 
@@ -74,14 +76,11 @@ end
 function testplot()
   df = CSV.read("data.csv", DataFrame)
 
-  for n in names(df)
-    rename!(df, Dict(n => "e" * n))
-  end
-
-  p = @df df plot(:egmtime, [:e1])
-  savefig(p, "data.png")
+  unicodeplots()
+  plot(df.gmtime, [df[:2], df[:3], df[:4], df[:5]])
+   # savefig(p, "data.png")
 end
 
-# testplot()
+testplot()
 
-test()
+# test()
