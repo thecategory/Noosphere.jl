@@ -20,12 +20,14 @@ params = Dict(
 )
 
 function getparams(params)
-  return "?z=1&year=" * params["year"] * 
+  return "?z=" * params["z"] *
+  "&year=" * params["year"] * 
   "&month=" * params["month"] * 
   "&day=" * params["day"] * 
   "&stime=" * params["stime"] * 
   "&etime=" * params["etime"] * 
-  "&gzip=No&idate=Yes"
+  "&gzip" * params["gzip"] *
+  "&idate" * params["idate"]
 end
 
 function get()
@@ -42,7 +44,7 @@ function savetofile(str)
     close(f)
 end
 
-function spl(str)
+function splitheader(str)
   spl = findfirst("gmtime", str)
   return spl
 end
@@ -62,9 +64,9 @@ end
 
 function test()
   str = get()
-  spl = spl(str)
-  # headerdf = getheaderdf(str, spl)
-  # println(headerdf)
+  spl = splitheader(str)
+  headerdf = getheaderdf(str, spl)
+  println(headerdf)
   df = getdf(str, spl)
   println(df)
 end
@@ -80,6 +82,6 @@ function testplot()
   savefig(p, "data.png")
 end
 
-testplot()
+# testplot()
 
-# test()
+test()

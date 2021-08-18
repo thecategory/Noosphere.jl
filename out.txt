@@ -1,0 +1,14 @@
+8×4 DataFrame
+│ Row │ c1    │  c2   │  c3        │  c4                │
+│     │ Int64 │ Int64 │ Int64      │ String             │
+├─────┼───────┼───────┼────────────┼────────────────────┤
+│ 1   │ 10    │ 1     │ 10         │ Samples per record │
+│ 2   │ 10    │ 2     │ 10         │ Seconds per record │
+│ 3   │ 10    │ 3     │ 30         │ Records per packet │
+│ 4   │ 10    │ 4     │ 200        │ Trial size         │
+│ 5   │ 11    │ 1     │ 21         │ Eggs reporting     │
+│ 6   │ 11    │ 2     │ 1627776000 │ Start time         │
+│ 7   │ 11    │ 3     │ 1627776060 │ End time           │
+│ 8   │ 11    │ 4     │ 61         │ Seconds of data    │
+0×23 DataFrame
+
