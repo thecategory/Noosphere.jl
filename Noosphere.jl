@@ -4,6 +4,7 @@ using CSV
 using DataFrames
 using Missings
 using URIs
+using StatsPlots
 
 uri = "https://global-mind.org/cgi-bin/eggdatareq.pl"
 headers = Dict("User-Agent" => "HTTP.jl")
@@ -23,7 +24,7 @@ params = Dict(
     "month" => "8",
     "day" => "1",
     "stime" => "00:00:00",
-    "etime" => "00:10:00",
+    "etime" => "00:01:00",
     "gzip" =>"No",
     "idate"=>"Yes"
 )
@@ -63,10 +64,17 @@ function test()
   str = getrequestbodystr()
   spl = getheaderdatasplit(str)
   headerdf = getheaderdf(str, spl)
-  println(headerdf)
+  # println(headerdf)
   df = getdf(str, spl)
-  println(df)
+  # println(df)
+
+end
+
+function testplot()
+  datastr = read("data.csv", String)
+  df = CSV.File(IOBuffer(datastr), silencewarnings=true) |> DataFrame
+  # @df df plot(:x, cols(propertynames(df)[2:end]))
 end
 
 
-test()
+testplot()
