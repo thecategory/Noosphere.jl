@@ -8,4 +8,4 @@ The goal is find correlation with [DuckDuckGo News Results API](https://serpapi.
 
 # Some Plot
 
-![plot](https://github.com/[thecategory]/[https://github.com/thecategory/Noosphere.jl/edit/main/README.md]/blob/[main]/p.jpeg?raw=true)
+![plot](https://github.com/thecategory/https://github.com/thecategory/Noosphere.jl/edit/main/README.md/blob/main/p.jpeg?raw=true)
