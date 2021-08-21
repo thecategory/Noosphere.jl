@@ -10,59 +10,59 @@ using Dates
 using TranscodingStreams
 using CodecZlib
 
-uri = "https://global-mind.org/cgi-bin/eggdatareq.pl"
+REQ_URI = "https://global-mind.org/cgi-bin/eggdatareq.pl"
 
 mutable struct Params
-  z::Int64
-  year::Int64
-  month::Int64
-  day::Int64
-  stime::Dates.Time
-  etime::Dates.Time
-  gzip::Bool
-  idate::Bool
+    z::Int64
+    year::Int64
+    month::Int64
+    day::Int64
+    stime::Dates.Time
+    etime::Dates.Time
+    gzip::Bool
+    idate::Bool
 end
 
 # default values of 10 minute egg data
 function Params()
-  stime = Dates.Time(t -> Dates.minute(t) == 00, 00)
+    stime = Dates.Time(t -> Dates.minute(t) == 00, 00)
 
-  etime = Dates.Time(t -> Dates.minute(t) == 10, 00)
+    etime = Dates.Time(t -> Dates.minute(t) == 10, 00)
 
-  Params(1, 2021, 8, 1, stime, etime, true, false)
+    Params(1, 2021, 8, 1, stime, etime, true, false)
 end
 
 mutable struct Header
-  samples_per_record::Int64
-  seconds_per_record::Int64
-  records_per_packet::Int64
-  trial_size::Int64
-  eggs_reporting::Int64
-  start_time::DateTime
-  end_time::DateTime
-  seconds_of_data::Int64
+    samples_per_record::Int64
+    seconds_per_record::Int64
+    records_per_packet::Int64
+    trial_size::Int64
+    eggs_reporting::Int64
+    start_time::DateTime
+    end_time::DateTime
+    seconds_of_data::Int64
   
-  Header() = new()
+    Header() = new()
 end
 
 mutable struct Results
-  header::Header
-  data::DataFrame
+    header::Header
+    data::DataFrame
 end
 
 function getrequestparams(params)
-  return  "?z=" * string(params.z) *
-          "&year=" * string(params.year) *
-          "&month=" * string(params.month) *
-          "&day=" * string(params.day) *
-          "&stime=" * Dates.format(params.stime, "HH:MM:SS")*
-          "&etime=" * Dates.format(params.etime, "HH:MM:SS") *
-          "&gzip=" * (params.gzip ? "Yes" : "No") *
-          "&idate=" * (params.idate ? "Yes" : "No")
+    "?z=" * string(params.z) *
+    "&year=" * string(params.year) *
+    "&month=" * string(params.month) *
+    "&day=" * string(params.day) *
+    "&stime=" * Dates.format(params.stime, "HH:MM:SS") *
+    "&etime=" * Dates.format(params.etime, "HH:MM:SS") *
+    "&gzip=" * (params.gzip ? "Yes" : "No") *
+    "&idate=" * (params.idate ? "Yes" : "No")
 end
 
 function get(params)
-    uri_withparam = uri * getrequestparams(params)
+    uri_withparam = REQ_URI * getrequestparams(params)
     println("getting " * uri_withparam)
     r = HTTP.get(uri_withparam)
 
@@ -85,8 +85,8 @@ function savetofile(str)
 end
 
 function splitheader(str)
-  spl = findfirst("gmtime", str)
-  return spl
+    spl = findfirst("gmtime", str)
+    return spl
 end
 
 # 10,1,10,"Samples per record"
@@ -143,7 +143,7 @@ end
 function rootmeansquare(A)
   s = 0.0
   for a in A
-     s += a*a
+     s += a * a
   end
   return sqrt(s / length(A))
 end
@@ -161,11 +161,11 @@ function saveplot(results)
   s = scatter(x=:gmtime, y=res, mode="lines")
 
   layout = Layout(title="Egg Data (Root Mean Square) for " * 
-                Dates.format(header.start_time, "yyyy-mm-dd HH:MM:SS") * " - " *
-                Dates.format(header.end_time, "yyyy-mm-dd HH:MM:SS") *
-                " (" * string(header.eggs_reporting) * " Eggs Reporting)", 
-                width=1200,
-                height=700)
+                  Dates.format(header.start_time, "yyyy-mm-dd HH:MM:SS") * " - " *
+                  Dates.format(header.end_time, "yyyy-mm-dd HH:MM:SS") *
+                  " (" * string(header.eggs_reporting) * " Eggs Reporting)", 
+                  width=1200,
+                  height=700)
 
   p = plot(s, layout)
 
