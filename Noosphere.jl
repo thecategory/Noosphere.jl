@@ -23,6 +23,10 @@ mutable struct Params
   idate::String
 end
 
+function Params()
+  Params(1,2021,8,1,"00:00:00","00:10:00","No","Yes")
+end
+
 mutable struct Header
   samples_per_record::Int64
   seconds_per_record::Int64
@@ -36,30 +40,19 @@ mutable struct Header
   Header() = new()
 end
 
-params = Dict(
-    "z" => "1",
-    "year" => "2021",
-    "month" => "8",
-    "day" => "1",
-    "stime" => "00:00:00",
-    "etime" => "00:10:00",
-    "gzip" =>"No",
-    "idate"=>"Yes"
-)
-
-function getparams(params)
-  return "?z=" * params["z"] *
-  "&year=" * params["year"] * 
-  "&month=" * params["month"] * 
-  "&day=" * params["day"] * 
-  "&stime=" * params["stime"] * 
-  "&etime=" * params["etime"] * 
-  "&gzip" * params["gzip"] *
-  "&idate" * params["idate"]
+function getrequestparams(params)
+  return "?z=" * string(params.z) *
+  "&year=" * string(params.year) *
+  "&month=" * string(params.month) *
+  "&day=" * string(params.day) *
+  "&stime=" * params.stime *
+  "&etime=" * params.etime *
+  "&gzip" * params.gzip *
+  "&idate" * params.idate
 end
 
 function get(params)
-    uri_withparam = uri * getparams(params)
+    uri_withparam = uri * getrequestparams(params)
     println("getting " * uri_withparam)
     r = HTTP.get(uri_withparam)
     str = decode(r.body, enc"ASCII")
@@ -117,16 +110,12 @@ function getheader(str, spl)
     i = i + 1
   end
 
-  # println(header)
-
-
   return header
 end
 
 function getdf(str, spl)
   datastr = str[spl[1] - 1:length(str)]
   df = CSV.File(IOBuffer(datastr), silencewarnings=true) |> DataFrame
-  # println(df)
   return df
 end
 
@@ -139,6 +128,7 @@ function rms(A)
 end
 
 function test()
+  params = Params()
   str = get(params)
   spl = splitheader(str)
   header = getheader(str, spl)
@@ -148,7 +138,6 @@ function test()
     df[col] = Missings.coalesce.(df[col], 0)
   end
 
-  # res = sum(eachcol(df[3:end]))
   res = []
   for row in eachrow(df[3:end])
     push!(res, rms(Array(row)))
