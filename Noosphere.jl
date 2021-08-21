@@ -3,7 +3,6 @@ using StringEncodings
 using CSV
 using DataFrames
 using Missings
-using URIs
 using PlotlyJS
 using DataFrames
 using StatsBase
@@ -23,8 +22,9 @@ mutable struct Params
   idate::String
 end
 
+# default values of 10 minute egg data
 function Params()
-  Params(1,2021,8,1,"00:00:00","00:10:00","No","Yes")
+  Params(1, 2021, 8, 1, "00:00:00", "00:10:00", "No", "Yes")
 end
 
 mutable struct Header
@@ -40,15 +40,20 @@ mutable struct Header
   Header() = new()
 end
 
+mutable struct Results
+  header::Header
+  data::DataFrame
+end
+
 function getrequestparams(params)
-  return "?z=" * string(params.z) *
-  "&year=" * string(params.year) *
-  "&month=" * string(params.month) *
-  "&day=" * string(params.day) *
-  "&stime=" * params.stime *
-  "&etime=" * params.etime *
-  "&gzip" * params.gzip *
-  "&idate" * params.idate
+  return  "?z=" * string(params.z) *
+          "&year=" * string(params.year) *
+          "&month=" * string(params.month) *
+          "&day=" * string(params.day) *
+          "&stime=" * params.stime *
+          "&etime=" * params.etime *
+          "&gzip" * params.gzip *
+          "&idate" * params.idate
 end
 
 function get(params)
@@ -57,7 +62,7 @@ function get(params)
     r = HTTP.get(uri_withparam)
     str = decode(r.body, enc"ASCII")
     savetofile(str)
-    return str
+    return Results(str)
 end
 
 function savetofile(str)
@@ -85,6 +90,7 @@ function getheader(str, spl)
 
   header = Header()
   i = 1
+
   for line in eachline(IOBuffer(headerstr))
     val = readdlm(IOBuffer(line), ',')[:3]
 
@@ -104,8 +110,6 @@ function getheader(str, spl)
       header.end_time = val
     elseif i == 8
       header.seconds_of_data = val
-    else
-      println("error")
     end
     i = i + 1
   end
@@ -116,6 +120,10 @@ end
 function getdf(str, spl)
   datastr = str[spl[1] - 1:length(str)]
   df = CSV.File(IOBuffer(datastr), silencewarnings=true) |> DataFrame
+  for col in names(df)
+    df[col] = Missings.coalesce.(df[col], 0)
+  end
+
   return df
 end
 
@@ -127,18 +135,12 @@ function rms(A)
   return sqrt(s / length(A))
 end
 
-function test()
-  params = Params()
-  str = get(params)
-  spl = splitheader(str)
-  header = getheader(str, spl)
-
-  df = getdf(str, spl)
-  for col in names(df)
-    df[col] = Missings.coalesce.(df[col], 0)
-  end
+function saveplot(results)
+  header = results.header
+  df = results.data
 
   res = []
+
   for row in eachrow(df[3:end])
     push!(res, rms(Array(row)))
   end
@@ -155,7 +157,21 @@ function test()
   p = plot(s, layout)
 
   savefig(p, "p.html")
+end
 
+function Results(str)
+  spl = splitheader(str)
+  header = getheader(str, spl)
+  df = getdf(str, spl)
+  Results(header, df)
+end
+
+function test()
+  params = Params()
+  
+  results = get(params)
+
+  saveplot(results)
 end
 
 test()
