@@ -137,7 +137,7 @@ function getdataframe(str, spl)
   return df
 end
 
-function rootsquaremean(A)
+function rootmeansquare(A)
   s = 0.0
   for a in A
      s += a*a
