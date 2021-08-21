@@ -12,7 +12,7 @@ using Dates
 uri = "https://global-mind.org/cgi-bin/eggdatareq.pl"
 
 mutable struct Params
-  z::Int
+  z::Int64
   year::Int64
   month::Int64
   day::Int64
@@ -24,7 +24,7 @@ end
 
 # default values of 10 minute egg data
 function Params()
-  Params(1, 2021, 8, 1, "00:00:00", "00:10:00", "No", "Yes")
+  Params(1, 2021, 8, 1, "00:00:00", "00:10:00", "No", "No")
 end
 
 mutable struct Header
@@ -52,8 +52,8 @@ function getrequestparams(params)
           "&day=" * string(params.day) *
           "&stime=" * params.stime *
           "&etime=" * params.etime *
-          "&gzip" * params.gzip *
-          "&idate" * params.idate
+          "&gzip=" * params.gzip *
+          "&idate=" * params.idate
 end
 
 function get(params)
@@ -151,7 +151,7 @@ function saveplot(results)
                 Dates.format(Dates.unix2datetime(header.start_time), "yyyy-mm-dd HH:MM:SS") * " - " *
                 Dates.format(Dates.unix2datetime(header.end_time), "yyyy-mm-dd HH:MM:SS") * " (" *
                 string(header.eggs_reporting) * " Eggs Reporting)", 
-                width=1000,
+                width=1200,
                 height=700)
 
   p = plot(s, layout)
