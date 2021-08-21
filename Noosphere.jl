@@ -10,6 +10,7 @@ using DelimitedFiles
 using Dates
 using TranscodingStreams
 using CodecZlib
+using CompoundPeriods
 
 uri = "https://global-mind.org/cgi-bin/eggdatareq.pl"
 
@@ -18,15 +19,19 @@ mutable struct Params
   year::Int64
   month::Int64
   day::Int64
-  stime::String
-  etime::String
+  stime::Dates.Time
+  etime::Dates.Time
   gzip::Bool
   idate::Bool
 end
 
 # default values of 10 minute egg data
 function Params()
-  Params(1, 2021, 8, 1, "00:00:00", "00:10:00", true, false)
+  stime = Dates.Time(t -> Dates.minute(t) == 00, 00)
+
+  etime = Dates.Time(t -> Dates.minute(t) == 10, 00)
+
+  Params(1, 2021, 8, 1, stime, etime, true, false)
 end
 
 mutable struct Header
@@ -52,8 +57,8 @@ function getrequestparams(params)
           "&year=" * string(params.year) *
           "&month=" * string(params.month) *
           "&day=" * string(params.day) *
-          "&stime=" * params.stime *
-          "&etime=" * params.etime *
+          "&stime=" * Dates.format(params.stime, "HH:MM:SS")*
+          "&etime=" * Dates.format(params.etime, "HH:MM:SS") *
           "&gzip=" * (params.gzip ? "Yes" : "No") *
           "&idate=" * (params.idate ? "Yes" : "No")
 end
@@ -177,6 +182,7 @@ function Results(str)
 end
 
 function test()
+
   params = Params()
   
   results = get(params)
