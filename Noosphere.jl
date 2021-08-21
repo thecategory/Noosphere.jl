@@ -6,6 +6,7 @@ using Missings
 using URIs
 using PlotlyJS
 using DataFrames
+using StatsBase
 
 uri = "https://global-mind.org/cgi-bin/eggdatareq.pl"
 
@@ -55,7 +56,7 @@ function getparams(params)
   "&idate" * params["idate"]
 end
 
-function get()
+function get(params)
     uri_withparam = uri * getparams(params)
     println("getting " * uri_withparam)
     r = HTTP.get(uri_withparam)
@@ -65,7 +66,7 @@ function get()
 end
 
 function savetofile(str)
-    println(str)
+    # println(str)
     f = open("data.csv", "w")
     write(f, str)
     close(f)
@@ -88,7 +89,7 @@ end
 function getheader(str, spl)  
   headerstr = str[1:spl[1] - 5]
   spl = split(headerstr, ",")
-  println(spl)
+  # println(spl)
   header = Header()
   header.samples_per_record =  parse(Int64, strip(String(spl[3]), "\\n"))
   header.seconds_per_record = parse(Int64, strip(String(spl[7]), "\\n"))
@@ -103,47 +104,40 @@ end
 function getdf(str, spl)
   datastr = str[spl[1] - 1:length(str)]
   df = CSV.File(IOBuffer(datastr), silencewarnings=true) |> DataFrame
-  println(df)
+  # println(df)
   return df
 end
 
+function rms(A)
+  s = 0.0
+  for a in A
+     s += a*a
+  end
+  return sqrt(s / length(A))
+end
+
 function test()
-  str = get()
+  str = get(params)
   spl = splitheader(str)
-  # header = getheader(str, spl)
-  # println(header)
+
   df = getdf(str, spl)
   for col in names(df)
     df[col] = Missings.coalesce.(df[col], 0)
   end
 
-  data = AbstractTrace[]
-  for col in names(df)[2:end]
-    if col == "Column2"
-      continue
-    end
-    push!(data, scatter(x=:gmtime, y=df[col], mode="lines", name=col))
-  end
+  res = sum(eachcol(df[3:end]))
 
-  layout = Layout(title="Egg Data",  
+  s = scatter(x=:gmtime, y=res, mode="lines")
+  layout = Layout(title="Egg Data (sum) for " * 
+                params["year"] * "/" * params["month"] * "/" * params["day"] * " " *
+                params["stime"] * " - " * params["etime"],  
                 width=1000,
                 height=700)
 
-  p = plot(data, layout)
+  p = plot(s, layout)
 
   savefig(p, "p.html")
 
 end
-
-function testplot()
-  #names!(df, Symbol.(replace.(string.(names(df)), Ref(r"\s"=>""))))
-  # df = CSV.read("data.csv", DataFrame)
-  # println(df)
-  # unicodeplots()
-  # plot(df.gmtime, [df[2:end]])
-   # savefig(p, "data.png")
-end
-
-#testplot()
 
 test()
