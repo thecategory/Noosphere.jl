@@ -1,16 +1,14 @@
+using StatsBase
+using PlotlyJS
+using DataFrames
 using HTTP
 using StringEncodings
 using CSV
-using DataFrames
-using Missings
-using PlotlyJS
-using DataFrames
-using StatsBase
 using DelimitedFiles
+using Missings
 using Dates
 using TranscodingStreams
 using CodecZlib
-using CompoundPeriods
 
 uri = "https://global-mind.org/cgi-bin/eggdatareq.pl"
 
