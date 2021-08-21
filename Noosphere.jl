@@ -152,7 +152,7 @@ function saveplot(results)
   res = []
 
   for row in eachrow(df[3:end])
-    push!(res, rootsquaremean(Array(row)))
+    push!(res, rootmeansquare(Array(row)))
   end
 
   s = scatter(x=:gmtime, y=res, mode="lines")
