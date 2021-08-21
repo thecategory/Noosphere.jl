@@ -8,6 +8,8 @@ using DataFrames
 using StatsBase
 using DelimitedFiles
 using Dates
+using TranscodingStreams
+using CodecZlib
 
 uri = "https://global-mind.org/cgi-bin/eggdatareq.pl"
 
@@ -18,13 +20,13 @@ mutable struct Params
   day::Int64
   stime::String
   etime::String
-  gzip::String
-  idate::String
+  gzip::Bool
+  idate::Bool
 end
 
 # default values of 10 minute egg data
 function Params()
-  Params(1, 2021, 8, 1, "00:00:00", "00:10:00", "No", "No")
+  Params(1, 2021, 8, 1, "00:00:00", "00:10:00", true, false)
 end
 
 mutable struct Header
@@ -33,8 +35,8 @@ mutable struct Header
   records_per_packet::Int64
   trial_size::Int64
   eggs_reporting::Int64
-  start_time::Int64
-  end_time::Int64
+  start_time::DateTime
+  end_time::DateTime
   seconds_of_data::Int64
   
   Header() = new()
@@ -52,15 +54,23 @@ function getrequestparams(params)
           "&day=" * string(params.day) *
           "&stime=" * params.stime *
           "&etime=" * params.etime *
-          "&gzip=" * params.gzip *
-          "&idate=" * params.idate
+          "&gzip=" * (params.gzip ? "Yes" : "No") *
+          "&idate=" * (params.idate ? "Yes" : "No")
 end
 
 function get(params)
     uri_withparam = uri * getrequestparams(params)
     println("getting " * uri_withparam)
     r = HTTP.get(uri_withparam)
-    str = decode(r.body, enc"ASCII")
+
+    str = ""
+    if params.gzip == true
+      io = TranscodingStream(GzipDecompressor(), IOBuffer(r.body))
+      str = read(io, String)
+    else
+      str = decode(r.body, enc"ASCII")
+    end
+
     savetofile(str)
     return Results(str)
 end
@@ -105,9 +115,9 @@ function getheader(str, spl)
     elseif i == 5
       header.eggs_reporting = val
     elseif i == 6
-      header.start_time = val
+      header.start_time = Dates.unix2datetime(val)
     elseif i == 7
-      header.end_time = val
+      header.end_time =  Dates.unix2datetime(val)
     elseif i == 8
       header.seconds_of_data = val
     end
@@ -117,7 +127,7 @@ function getheader(str, spl)
   return header
 end
 
-function getdf(str, spl)
+function getdataframe(str, spl)
   datastr = str[spl[1] - 1:length(str)]
   df = CSV.File(IOBuffer(datastr), silencewarnings=true) |> DataFrame
   for col in names(df)
@@ -127,7 +137,7 @@ function getdf(str, spl)
   return df
 end
 
-function rms(A)
+function rootsquaremean(A)
   s = 0.0
   for a in A
      s += a*a
@@ -142,15 +152,15 @@ function saveplot(results)
   res = []
 
   for row in eachrow(df[3:end])
-    push!(res, rms(Array(row)))
+    push!(res, rootsquaremean(Array(row)))
   end
 
   s = scatter(x=:gmtime, y=res, mode="lines")
 
   layout = Layout(title="Egg Data (Root Mean Square) for " * 
-                Dates.format(Dates.unix2datetime(header.start_time), "yyyy-mm-dd HH:MM:SS") * " - " *
-                Dates.format(Dates.unix2datetime(header.end_time), "yyyy-mm-dd HH:MM:SS") * " (" *
-                string(header.eggs_reporting) * " Eggs Reporting)", 
+                Dates.format(header.start_time, "yyyy-mm-dd HH:MM:SS") * " - " *
+                Dates.format(header.end_time, "yyyy-mm-dd HH:MM:SS") *
+                " (" * string(header.eggs_reporting) * " Eggs Reporting)", 
                 width=1200,
                 height=700)
 
@@ -162,7 +172,7 @@ end
 function Results(str)
   spl = splitheader(str)
   header = getheader(str, spl)
-  df = getdf(str, spl)
+  df = getdataframe(str, spl)
   Results(header, df)
 end
 
