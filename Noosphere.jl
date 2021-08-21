@@ -125,10 +125,14 @@ function test()
     df[col] = Missings.coalesce.(df[col], 0)
   end
 
-  res = sum(eachcol(df[3:end]))
+  # res = sum(eachcol(df[3:end]))
+  res = []
+  for row in eachrow(df[3:end])
+    push!(res, rms(Array(row)))
+  end
 
   s = scatter(x=:gmtime, y=res, mode="lines")
-  layout = Layout(title="Egg Data (sum) for " * 
+  layout = Layout(title="Egg Data (Root Mean Square) for " * 
                 params["year"] * "/" * params["month"] * "/" * params["day"] * " " *
                 params["stime"] * " - " * params["etime"],  
                 width=1000,
