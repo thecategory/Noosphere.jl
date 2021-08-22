@@ -2,9 +2,26 @@
 
 Library for accessing the [Global Conciousness Project](https://noosphere.princeton.edu/index.html) data in [Julia](https://julialang.org/).
 
-# Motivation
+# Running (currently v0.1 is not a package)
 
-The goal is find correlation with [DuckDuckGo News Results API](https://serpapi.com/duckduckgo-news-results) events with significant GCP network variance, to make possible their rationale less [anecdotal](https://global-mind.org/papers/pdf/GCP.Corona.edgescience.fin.pdf).
+```julia
+  # create new Params object with time period
+  params = Params(2021, 8, 1, "00:00:00", "00:10:00", true)
+  
+  # get results
+  res = get(params)
+
+  # do something with header ...
+  println(header.eggs_reporting)
+
+  # do something with results dataframe
+  for row in eachrow(res.data[3:end])
+    push!(res.data, rootmeansquare(Array(row)))
+  end
+
+  # output sample plot
+  saveplot(res)
+```
 
 # Output plot (using PlotlyJS)
 

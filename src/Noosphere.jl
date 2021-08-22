@@ -182,7 +182,7 @@ function Results(str)
 end
 
 function test()
-  params = Params()
+  params = Params(2021, 8, 1, "00:00:00", "00:10:00", true)
   
   res = get(params)
 
