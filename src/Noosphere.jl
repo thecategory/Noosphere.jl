@@ -1,3 +1,5 @@
+# module Noosphere
+
 using StatsBase
 using PlotlyJS
 using DataFrames
@@ -12,24 +14,23 @@ using CodecZlib
 
 REQ_URI = "https://global-mind.org/cgi-bin/eggdatareq.pl"
 
+export Params
+
 mutable struct Params
-    z::Int64
     year::Int64
     month::Int64
     day::Int64
-    stime::Dates.Time
-    etime::Dates.Time
+    stime::String #Dates.Time
+    etime::String #Dates.Time
     gzip::Bool
-    idate::Bool
 end
 
 # default values of 10 minute egg data
 function Params()
-    stime = Dates.Time(t -> Dates.minute(t) == 00, 00)
+    # stime = Dates.Time(t -> Dates.minute(t) == 00, 00)
+    # etime = Dates.Time(t -> Dates.minute(t) == 10, 00)
 
-    etime = Dates.Time(t -> Dates.minute(t) == 10, 00)
-
-    Params(1, 2021, 8, 1, stime, etime, true, false)
+    Params(2021, 8, 1, "00:00:00", "00:10:00", true)
 end
 
 mutable struct Header
@@ -51,14 +52,14 @@ mutable struct Results
 end
 
 function getrequestparams(params)
-    "?z=" * string(params.z) *
+    "?z=1" *
     "&year=" * string(params.year) *
     "&month=" * string(params.month) *
     "&day=" * string(params.day) *
-    "&stime=" * Dates.format(params.stime, "HH:MM:SS") *
-    "&etime=" * Dates.format(params.etime, "HH:MM:SS") *
+    "&stime=" * params.stime * # Dates.format(params.stime, "HH:MM:SS") *
+    "&etime=" * params.etime * #Dates.format(params.etime, "HH:MM:SS") *
     "&gzip=" * (params.gzip ? "Yes" : "No") *
-    "&idate=" * (params.idate ? "Yes" : "No")
+    "&idate=No"
 end
 
 function get(params)
@@ -74,12 +75,13 @@ function get(params)
       str = decode(r.body, enc"ASCII")
     end
 
-    savetofile(str)
+    #savetofile(str)
+
     return Results(str)
 end
 
 function savetofile(str)
-    f = open("data.csv", "w")
+    f = open("out/data.csv", "w")
     write(f, str)
     close(f)
 end
@@ -148,9 +150,9 @@ function rootmeansquare(A)
   return sqrt(s / length(A))
 end
 
-function saveplot(results)
-  header = results.header
-  df = results.data
+function saveplot(res)
+  header = res.header
+  df = res.data
 
   res = []
 
@@ -169,7 +171,7 @@ function saveplot(results)
 
   p = plot(s, layout)
 
-  savefig(p, "p.html")
+  savefig(p, "out/p.html")
 end
 
 function Results(str)
@@ -180,12 +182,13 @@ function Results(str)
 end
 
 function test()
-
   params = Params()
   
-  results = get(params)
+  res = get(params)
 
-  saveplot(results)
+  saveplot(res)
 end
 
 test()
+
+# end # module
