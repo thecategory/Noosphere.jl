@@ -8,4 +8,4 @@ The goal is find correlation with [DuckDuckGo News Results API](https://serpapi.
 
 # Output plot (using PlotlyJS)
 
-![plot](https://github.com/thecategory/Noosphere.jl/blob/main/p.jpeg)
+![plot](https://github.com/thecategory/Noosphere.jl/blob/main/out/p.jpeg)
