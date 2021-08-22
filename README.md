@@ -14,9 +14,9 @@ Library for accessing the [Global Conciousness Project](https://noosphere.prince
   # do something with header ...
   println(header.eggs_reporting)
 
-  # do something with results dataframe
+  # do something with results dataframe ...
   for row in eachrow(res.data[3:end])
-    push!(res.data, rootmeansquare(Array(row)))
+    println(row)
   end
 
   # output sample plot
