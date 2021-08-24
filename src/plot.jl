@@ -23,5 +23,5 @@ function saveplot(res)
 
   p = plot(s, layout)
 
-  savefig(p, "out/p.html")
+  savefig(p, "./out/p.html")
 end

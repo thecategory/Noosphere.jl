@@ -1,9 +1,11 @@
+const CACHE_DIR = "./_cache/"
+
 function getcache(dur)
   days = numofdays(dur)
   ret = Result[]
 
-  for r in days
-      p = "./_cache/" * Dates.format(r, "yyyy_mm_dd") * ".csv"
+  for day in days
+      p = daycachefilename(day)
       if ispath(p) == false
           continue
       end
@@ -16,15 +18,22 @@ function getcache(dur)
   return ret
 end
 
-function savecache(r)
-  s = Dates.format(r.header.start_time, "yyyy_mm_dd") * ".csv"
-  if ispath("_cache") == false
-      mkdir("_cache")
+function savecache(res)
+  if ispath(CACHE_DIR) == false
+      mkdir(CACHE_DIR)
   end
-  p = "_cache/" * s
+  p = rescachefilename(res)
   if ispath(p) == false
-      savetofile(r.raw, p)
+      savetofile(res.raw, p)
   end
+end
+
+function daycachefilename(day)
+  return CACHE_DIR * Dates.format(day, "yyyy_mm_dd") * ".csv"
+end
+
+function rescachefilename(res)
+  return CACHE_DIR * Dates.format(res.header.start_time, "yyyy_mm_dd") * ".csv"
 end
 
 function findday(results, day)
