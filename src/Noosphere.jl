@@ -12,11 +12,12 @@ using Dates
 using TranscodingStreams
 using CodecZlib
 
-include("src/util.jl")
-include("src/cache.jl")
-include("src/parse.jl")
-include("src/plot.jl")
-include("src/request.jl")
+include("types.jl")
+include("util.jl")
+include("cache.jl")
+include("parse.jl")
+include("plot.jl")
+include("request.jl")
 
 function test()
     start_day = Date(2021, 7, 1)

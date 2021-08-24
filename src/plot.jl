@@ -3,6 +3,7 @@ function saveplot(res)
   df = res.data
 
   res = []
+  time = []
   
   for col in names(df)
       df[col] = Missings.coalesce.(df[col], 0)
@@ -12,7 +13,12 @@ function saveplot(res)
       push!(res, rootmeansquare(Array(row)))
   end
 
-  s = scatter(x=:gmtime, y=res, mode="lines")
+  for t in df[:2]
+    u = Dates.format(Dates.unix2datetime(t), "yyyy-mm-dd HH:MM:SS")
+    push!(time, u)
+  end
+
+  s = scatter(x=time, y=res, mode="lines")
 
   layout = Layout(title="Egg Data (Root Mean Square) for " *
                 Dates.format(header.start_time, "yyyy-mm-dd HH:MM:SS") * " - " *
@@ -23,7 +29,7 @@ function saveplot(res)
 
   p = plot(s, layout)
 
-  savefig(p, "./out/p.html")
+  savefig(p, "../out/p.html")
 end
 
 function saveplotmultiday(res)

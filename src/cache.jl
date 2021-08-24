@@ -1,8 +1,8 @@
-const CACHE_DIR = "./_cache/"
+const CACHE_DIR = "../_cache/"
 
 function getcache(dur)
   days = numofdays(dur)
-  ret = Result[]
+  res = Result[]
 
   for day in days
       p = daycachefilename(day)
@@ -12,10 +12,10 @@ function getcache(dur)
       println("reading " * p)
       raw = read(p, String)
       c = Result(raw)
-      push!(ret, c)
+      push!(res, c)
   end
 
-  return ret
+  return res
 end
 
 function savecache(res)
