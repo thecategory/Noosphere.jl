@@ -22,7 +22,7 @@ macro optstruct(s)
           
   newbody = [body.args; ctor]
   
-  return Expr(s.head, ismutable, name, Expr(body.head, newbody...))       
+  return Expr(s.head, ismutable, name, Expr(body.head, newbody...))
 end
 
 function rootmeansquare(A)
@@ -41,8 +41,8 @@ function httpgetgzip(uri)
   return str
 end
 
-function savetofile(str)
-  f = open("out/data.csv", "w")
+function savetofile(str, path)
+  f = open(path, "w")
   write(f, str)
   close(f)
 end
