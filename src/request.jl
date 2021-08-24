@@ -81,11 +81,12 @@ function getrequestparams(year, month, day, stime, etime)
 end
 
 function get(params)
+    results = Result[]
     cache = getcache(params.duration)
 
     if params.multiday == true
         days = numofdays(params.duration)
-        results = Result[]
+
 
         for day in days
             c = findday(cache, day)
@@ -110,6 +111,9 @@ function get(params)
         uri_withparam = REQ_URI * getrequestparams(params)
         println("getting " * uri_withparam)
         ret = httpgetgzip(uri_withparam)
-        return Result(ret)
+        res = Result(ret)
+        push!(results, res)
+        
+        return results
     end
 end

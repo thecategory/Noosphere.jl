@@ -25,3 +25,19 @@ function saveplot(res)
 
   savefig(p, "./out/p.html")
 end
+
+function saveplotmultiday(res)
+  df = DataFrame()
+  for r in res
+      df = vcat(df, r.data, cols=:union)
+  end
+
+  header = Header()
+
+  header.start_time = res[1].header.start_time
+  header.end_time = res[end].header.end_time
+  header.eggs_reporting = res[end].header.eggs_reporting
+
+  out = Result(header, df, "")
+  saveplot(out)
+end
